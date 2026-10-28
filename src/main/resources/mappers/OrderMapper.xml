@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.OrderMapper">
+    <resultMap id="BaseResultMap" type="org.example.pojo.entity.Order">
+        <id column="order_id" jdbcType="INTEGER" property="orderId" />
+        <result column="title" jdbcType="VARCHAR" property="title" />
+        <result column="price" jdbcType="DECIMAL" property="price" />
+        <result column="content" jdbcType="VARCHAR" property="content" />
+        <result column="order_status" jdbcType="INTEGER" property="orderStatus" />
+        <result column="type" jdbcType="VARCHAR" property="type" />
+        <result column="picture" jdbcType="VARCHAR" property="picture" />
+        <result column="own_name" jdbcType="VARCHAR" property="ownName" />
+        <result column="cooperation_name" jdbcType="VARCHAR" property="cooperationName" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="address" jdbcType="VARCHAR" property="address" />
+    </resultMap>
+    <sql id="Base_Column_List">
+        order_id, title, price, content, order_status, type, picture, own_name, cooperation_name,
+        create_time, update_time, address
+    </sql>
+
+
+
+    <select id="selectByKeys" parameterType="org.example.pojo.entity.Order" resultType="org.example.pojo.entity.Order">
+        select
+        <include refid="Base_Column_List" />
+        from tb_order
+        <where>
+            order_status = 0
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="content != null">
+                and content like CONCAT('%',#{content},'%')
+            </if>
+            <if test="ownName != null">
+                and own_name = #{ownName}
+            </if>
+
+        </where>
+    </select>
+
+
+
+    <select id="searchAllGoodsByKeys" parameterType="org.example.pojo.entity.Order" resultType="org.example.pojo.entity.Order">
+        select
+        <include refid="Base_Column_List" />
+        from tb_order
+        <where>
+            order_status = 0
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="content != null">
+                and (content like CONCAT('%',#{content},'%')
+                     or title like CONCAT('%',#{content},'%'))
+            </if>
+        </where>
+    </select>
+
+    <!-- 管理员后台关键词搜索商品：包含已下架商品（不过滤 order_status） -->
+    <select id="searchAllGoodsByKeysForAdmin" parameterType="org.example.pojo.entity.Order" resultType="org.example.pojo.entity.Order">
+        select
+        <include refid="Base_Column_List" />
+        from tb_order
+        <where>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="content != null">
+                and (content like CONCAT('%',#{content},'%')
+                     or title like CONCAT('%',#{content},'%'))
+            </if>
+        </where>
+    </select>
+
+
+    <select id="selectAllNeedsByKeys" parameterType="org.example.pojo.entity.Order" resultType="org.example.pojo.entity.Order">
+        select
+        <include refid="Base_Column_List" />
+        from tb_order
+        <where>
+            order_status = 0
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="content != null">
+                and (
+                title like CONCAT('%',#{content},'%')
+                OR content like CONCAT('%',#{content},'%')
+                )
+            </if>
+        </where>
+    </select>
+
+
+
+    <select id="selectAllGoods" resultType="org.example.pojo.entity.Order">
+        select
+        <include refid="Base_Column_List" />
+        from tb_order
+        <where>
+            order_status = 0
+            <if test="orderId != null">
+                and order_id = #{orderId,jdbcType=VARCHAR}
+            </if>
+            <if test="title != null">
+                and title = #{title,jdbcType=VARCHAR}
+            </if>
+            <if test="price != null">
+                and price = #{price,jdbcType=DECIMAL}
+            </if>
+            <if test="content != null">
+                and content = #{content,jdbcType=VARCHAR}
+            </if>
+            <if test="orderStatus != null">
+                and order_status = #{orderStatus,jdbcType=INTEGER}
+            </if>
+            <if test="type != null">
+                and type = #{type,jdbcType=VARCHAR}
+            </if>
+            <if test="picture != null">
+                and picture = #{picture,jdbcType=VARCHAR}
+            </if>
+            <if test="ownName != null">
+                and own_name = #{ownName,jdbcType=VARCHAR}
+            </if>
+            <if test="cooperationName != null">
+                and cooperation_name = #{cooperationName,jdbcType=VARCHAR}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime,jdbcType=TIMESTAMP}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime,jdbcType=TIMESTAMP}
+            </if>
+            <if test="address != null">
+                and address = #{address,jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+    <select id="selectAllNeeds" resultType="org.example.pojo.entity.Order">
+        select
+        <include refid="Base_Column_List" />
+        from tb_order
+        <where>
+
+            <if test="orderId != null">
+                and order_id = #{orderId,jdbcType=VARCHAR}
+            </if>
+            <if test="title != null">
+                and title = #{title,jdbcType=VARCHAR}
+            </if>
+            <if test="price != null">
+                and price = #{price,jdbcType=DECIMAL}
+            </if>
+            <if test="content != null">
+                and content = #{content,jdbcType=VARCHAR}
+            </if>
+            <if test="orderStatus != null">
+                and order_status = #{orderStatus,jdbcType=INTEGER}
+            </if>
+            <if test="type != null">
+                and type = #{type,jdbcType=VARCHAR}
+            </if>
+            <if test="picture != null">
+                and picture = #{picture,jdbcType=VARCHAR}
+            </if>
+            <if test="ownName != null">
+                and own_name = #{ownName,jdbcType=VARCHAR}
+            </if>
+            <if test="cooperationName != null">
+                and cooperation_name = #{cooperationName,jdbcType=VARCHAR}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime,jdbcType=TIMESTAMP}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime,jdbcType=TIMESTAMP}
+            </if>
+            <if test="address != null">
+                and address = #{address,jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+
+
+
+    <select id="selectAll" resultType="org.example.pojo.entity.Order">
+        select * from tb_order where type = 'goods'
+    </select>
+
+    <select id="selectAllcontents" resultType="org.example.pojo.entity.Order">
+        select * from tb_order
+        where type = 'goods'
+          and content like concat('%', #{keys}, '%')
+    </select>
+
+    <select id="selectAllneeds" resultType="org.example.pojo.entity.Order">
+        select * from tb_order
+        where type = 'needs'
+    </select>
+
+
+    <insert id="addGoods" parameterType="org.example.pojo.entity.Order">
+        insert into tb_order
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="title != null">title,</if>
+            <if test="price != null">price,</if>
+            <if test="content != null">content,</if>
+            <if test="type != null">type,</if>
+            <if test="orderStatus != null">order_status,</if>
+            <if test="picture != null">picture,</if>
+            <if test="ownName != null">own_name,</if>
+            <if test="cooperationName != null">cooperation_name,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="address != null">address,</if>
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="title != null">#{title},</if>
+            <if test="price != null">#{price},</if>
+            <if test="content != null">#{content},</if>
+            <if test="type != null">#{type},</if>
+            <if test="orderStatus != null">#{orderStatus},</if>
+            <if test="picture != null">#{picture},</if>
+            <if test="ownName != null">#{ownName},</if>
+            <if test="cooperationName != null">#{cooperationName},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="address != null">#{address},</if>
+        </trim>
+    </insert>
+
+
+
+    <update id="takeDown">
+        update tb_order
+        set order_status = 1
+        where order_id = #{orderId};
+    </update>
+    <update id="takeUp">
+        update tb_order
+        set order_status = 0
+        where order_id = #{orderId};
+    </update>
+
+
+
+    <update id="updateGoodsById" parameterType="org.example.pojo.entity.Order">
+        update tb_order
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="orderStatus != null">order_status = #{orderStatus},</if>
+            <if test="picture != null">picture = #{picture},</if>
+            <if test="ownName != null">own_name = #{ownName},</if>
+            <if test="cooperationName != null">cooperation_name = #{cooperationName},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="address != null">address = #{address},</if>
+        </set>
+        where order_id = #{orderId}
+    </update>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultType="org.example.pojo.entity.Order">
+        select
+        <include refid="Base_Column_List" />
+        from tb_order
+        where order_id = #{orderId,jdbcType=INTEGER}
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete from tb_order
+        where order_id = #{orderId,jdbcType=INTEGER}
+    </delete>
+
+    <select id="selectMyNeeds" resultType="org.example.pojo.entity.Order">
+        select *
+        from tb_order
+        where own_name = #{ownName}
+          and type = 'needs'
+    </select>
+
+
+    <insert id="AddMyNeeds" parameterType="org.example.pojo.entity.Order" >
+        insert into tb_order (title, price, content, type, order_status, picture, own_name, cooperation_name, create_time, update_time, address)
+        values (#{title}, #{price}, #{content}, #{type}, #{orderStatus}, #{picture}, #{ownName}, #{cooperationName}, #{createTime}, #{updateTime}, #{address})
+    </insert>
+
+
+
+
+    <select id="selectPriceByOrderId" resultType="java.math.BigDecimal">
+        select price from tb_order where order_id = #{orderId}
+    </select>
+
+
+
+
+
+
+
+
+</mapper>

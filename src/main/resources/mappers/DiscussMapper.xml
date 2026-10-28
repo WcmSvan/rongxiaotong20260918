@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 讨论表映射 -->
+<mapper namespace="org.example.mapper.DiscussMapper">
+    <!-- 查询所有讨论 -->
+    <select id="selectAllDiscuss" resultType="Discuss">
+        select * from tb_discuss
+    </select>
+
+    <!-- 发布讨论 -->
+       <insert id="insertSelective" parameterType="Discuss">
+        insert into tb_discuss (knowledge_id, own_name, content, create_time)
+        values (#{knowledgeId}, #{ownName}, #{content}, now())
+    </insert>
+
+
+</mapper>

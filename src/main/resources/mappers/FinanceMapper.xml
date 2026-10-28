@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.FinanceMapper">
+    <!-- 融资意向结果映射：tb_financing_intention 字段 -> Intention 实体属性 -->
+    <resultMap id="IntentionResultMap" type="org.example.pojo.entity.Intention">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="user_name" jdbcType="VARCHAR" property="userName" />
+        <result column="real_name" jdbcType="VARCHAR" property="realName" />
+        <result column="address" jdbcType="VARCHAR" property="address" />
+        <result column="amount" jdbcType="INTEGER" property="amount" />
+        <result column="application" jdbcType="VARCHAR" property="application" />
+        <result column="item" jdbcType="VARCHAR" property="item" />
+        <result column="repayment_period" jdbcType="INTEGER" property="repaymentPeriod" />
+        <result column="area" jdbcType="INTEGER" property="area" />
+        <result column="phone" jdbcType="VARCHAR" property="phone" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    </resultMap>
+
+    <!-- 根据用户名查询该用户的所有融资意向 -->
+    <select id="selectIntentionByName" parameterType="java.lang.String" resultMap="IntentionResultMap">
+        SELECT id, user_name, real_name, address, amount, application, item,
+               repayment_period, area, phone, create_time, update_time
+        FROM tb_financing_intention
+        WHERE user_name = #{name}
+    </select>
+
+    <!-- 新增一条融资意向：id 自增，create_time/update_time 由 Service 层设置 -->
+    <insert id="insertIntention" parameterType="org.example.pojo.entity.Intention"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_financing_intention
+            (user_name, real_name, address, amount, application, item,
+             repayment_period, area, phone, create_time, update_time)
+        VALUES
+            (#{userName}, #{realName}, #{address}, #{amount}, #{application}, #{item},
+             #{repaymentPeriod}, #{area}, #{phone}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!-- 根据 id + user_name 修改融资意向：只更新业务字段与 update_time，不改 create_time -->
+    <update id="updateIntention" parameterType="org.example.pojo.entity.Intention">
+        UPDATE tb_financing_intention
+        SET real_name       = #{realName},
+            address         = #{address},
+            amount          = #{amount},
+            application     = #{application},
+            item            = #{item},
+            repayment_period = #{repaymentPeriod},
+            area            = #{area},
+            phone           = #{phone},
+            update_time     = #{updateTime}
+        WHERE id = #{id}
+          AND user_name = #{userName}
+    </update>
+
+    <!-- 根据意向id删除单条融资意向：id 定位记录，user_name 校验归属，防止越权删除 -->
+    <delete id="deleteIntentionById">
+        DELETE FROM tb_financing_intention
+        WHERE id = #{id}
+          AND user_name = #{userName}
+    </delete>
+
+    <!--
+        根据用户名查询推荐融资人：
+        以当前用户的所有意向(i1)作为基准，自连接 tb_financing_intention(i2)，
+        命中条件为「相同城市(address) 且 相同农作物(item) 且 不是本人(user_name 不相等)」，
+        DISTINCT 去重防止当前用户多条意向命中同一条他人意向造成重复。
+    -->
+    <select id="selectRecommendByName" resultMap="IntentionResultMap">
+        SELECT DISTINCT
+            i2.id, i2.user_name, i2.real_name, i2.address, i2.amount,
+            i2.application, i2.item, i2.repayment_period, i2.area,
+            i2.phone, i2.create_time, i2.update_time
+        FROM tb_financing_intention i1
+        JOIN tb_financing_intention i2
+          ON i2.address = i1.address
+         AND i2.item = i1.item
+         AND i2.user_name != i1.user_name
+        WHERE i1.user_name = #{name}
+    </select>
+
+    <!-- 根据贷款id查询贷款详情，归属校验在 Service 层完成；LEFT JOIN 银行表带出银行名称 -->
+    <select id="selectFinanceById" parameterType="java.lang.Integer" resultType="org.example.pojo.entity.Finance">
+        SELECT f.finance_id, f.bank_id, f.own_name, f.real_name, f.phone, f.id_num, f.status,
+               f.money, f.rate, f.repayment, f.create_time, f.update_time,
+               f.combination_name1, f.combination_phone1, f.combination_idnum1,
+               f.combination_name2, f.combination_phone2, f.combination_idnum2,
+               f.file_info, b.bank_name
+        FROM tb_finance f
+        LEFT JOIN tb_bank b ON f.bank_id = b.bank_id
+        WHERE f.finance_id = #{financeId}
+    </select>
+
+    <!-- 根据申请人用户名查询贷款申请列表（含组合贷款多条记录），按创建时间倒序 -->
+    <select id="selectFinanceListByOwnName" parameterType="java.lang.String" resultType="org.example.pojo.entity.Finance">
+        SELECT f.finance_id, f.bank_id, f.own_name, f.real_name, f.phone, f.id_num, f.status,
+               f.money, f.rate, f.repayment, f.create_time, f.update_time,
+               f.combination_name1, f.combination_phone1, f.combination_idnum1,
+               f.combination_name2, f.combination_phone2, f.combination_idnum2,
+               f.file_info, b.bank_name
+        FROM tb_finance f
+        LEFT JOIN tb_bank b ON f.bank_id = b.bank_id
+        WHERE f.own_name = #{ownName}
+        ORDER BY f.create_time DESC
+    </select>
+
+    <!-- 新增单人贷款申请：own_name/status/create_time/update_time 由 Service 层设置 -->
+    <insert id="insertFinance" parameterType="org.example.pojo.entity.Finance"
+            useGeneratedKeys="true" keyProperty="financeId">
+        INSERT INTO tb_finance
+            (bank_id, own_name, real_name, phone, id_num, status,
+             money, rate, repayment, create_time, update_time,
+             combination_name1, combination_phone1, combination_idnum1,
+             combination_name2, combination_phone2, combination_idnum2,
+             file_info)
+        VALUES
+            (#{bankId}, #{ownName}, #{realName}, #{phone}, #{idNum}, #{status},
+             #{money}, #{rate}, #{repayment}, #{createTime}, #{updateTime},
+             #{combinationName1}, #{combinationPhone1}, #{combinationIdnum1},
+             #{combinationName2}, #{combinationPhone2}, #{combinationIdnum2},
+             #{fileInfo})
+    </insert>
+
+    <!-- 新增组合贷款申请：批量插入，<foreach> 拼接多组 VALUES -->
+    <insert id="insertFinancesMulti" parameterType="java.util.List">
+        INSERT INTO tb_finance
+            (bank_id, own_name, real_name, phone, id_num, status,
+             money, rate, repayment, create_time, update_time,
+             combination_name1, combination_phone1, combination_idnum1,
+             combination_name2, combination_phone2, combination_idnum2,
+             file_info)
+        VALUES
+        <foreach collection="list" item="f" separator=",">
+            (#{f.bankId}, #{f.ownName}, #{f.realName}, #{f.phone}, #{f.idNum}, #{f.status},
+             #{f.money}, #{f.rate}, #{f.repayment}, #{f.createTime}, #{f.updateTime},
+             #{f.combinationName1}, #{f.combinationPhone1}, #{f.combinationIdnum1},
+             #{f.combinationName2}, #{f.combinationPhone2}, #{f.combinationIdnum2},
+             #{f.fileInfo})
+        </foreach>
+    </insert>
+
+    <!-- 管理员：查询所有贷款申请列表（不限用户名），按创建时间倒序，配合 PageHelper 分页 -->
+    <select id="selectAllFinance" resultType="org.example.pojo.entity.Finance">
+        SELECT f.finance_id, f.bank_id, f.own_name, f.real_name, f.phone, f.id_num, f.status,
+               f.money, f.rate, f.repayment, f.create_time, f.update_time,
+               f.combination_name1, f.combination_phone1, f.combination_idnum1,
+               f.combination_name2, f.combination_phone2, f.combination_idnum2,
+               f.file_info, b.bank_name
+        FROM tb_finance f
+        LEFT JOIN tb_bank b ON f.bank_id = b.bank_id
+        ORDER BY f.create_time DESC
+    </select>
+
+    <!-- 管理员：根据真实姓名模糊查询贷款申请列表，按创建时间倒序，配合 PageHelper 分页 -->
+    <select id="selectFinanceByRealName" resultType="org.example.pojo.entity.Finance">
+        SELECT f.finance_id, f.bank_id, f.own_name, f.real_name, f.phone, f.id_num, f.status,
+               f.money, f.rate, f.repayment, f.create_time, f.update_time,
+               f.combination_name1, f.combination_phone1, f.combination_idnum1,
+               f.combination_name2, f.combination_phone2, f.combination_idnum2,
+               f.file_info, b.bank_name
+        FROM tb_finance f
+        LEFT JOIN tb_bank b ON f.bank_id = b.bank_id
+        WHERE f.real_name LIKE CONCAT('%', #{realName}, '%')
+        ORDER BY f.create_time DESC
+    </select>
+
+    <!-- 管理员：根据贷款id修改贷款状态（0：未贷款 1：已贷款 2：已还款） -->
+    <update id="updateFinanceStatus">
+        UPDATE tb_finance
+        SET status = #{status},
+            update_time = NOW()
+        WHERE finance_id = #{financeId}
+    </update>
+
+    <!-- 管理员：根据贷款id删除贷款记录 -->
+    <delete id="deleteFinanceById">
+        DELETE FROM tb_finance
+        WHERE finance_id = #{financeId}
+    </delete>
+</mapper>

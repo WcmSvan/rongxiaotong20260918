@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.OperationLogMapper">
+
+    <!-- 插入操作日志 -->
+    <insert id="insert" parameterType="org.example.pojo.entity.OperationLog"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_operation_log
+        (user_name, role, module, operation, http_method, url, params, ip, cost_time, status, error_msg, create_time)
+        VALUES
+        (#{userName}, #{role}, #{module}, #{operation}, #{httpMethod}, #{url}, #{params},
+         #{ip}, #{costTime}, #{status}, #{errorMsg}, #{createTime})
+    </insert>
+
+    <!-- 按条件分页查询（PageHelper 拦截第一条查询自动分页） -->
+    <select id="selectPage" resultType="org.example.pojo.entity.OperationLog">
+        SELECT * FROM tb_operation_log
+        <where>
+            <if test="userName != null and userName != ''">
+                AND user_name LIKE CONCAT('%', #{userName}, '%')
+            </if>
+            <if test="module != null and module != ''">
+                AND module = #{module}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY create_time DESC, id DESC
+    </select>
+
+    <!-- 清空全部日志 -->
+    <delete id="deleteAll">
+        DELETE FROM tb_operation_log
+    </delete>
+
+</mapper>

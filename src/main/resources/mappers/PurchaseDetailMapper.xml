@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.PurchaseDetailMapper">
+  <resultMap id="BaseResultMap" type="org.example.pojo.entity.PurchaseDetail">
+    <id column="detail_id" jdbcType="INTEGER" property="detailId" />
+    <result column="purchase_id" jdbcType="INTEGER" property="purchaseId" />
+    <result column="order_id" jdbcType="INTEGER" property="orderId" />
+    <result column="unin_price" jdbcType="DECIMAL" property="uninPrice" />
+    <result column="sum_price" jdbcType="DECIMAL" property="sumPrice" />
+    <result column="count" jdbcType="INTEGER" property="count" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    detail_id, purchase_id, order_id, unin_price, sum_price, count
+  </sql>
+
+
+
+  <select id="selectPurchaseByIdList" resultType="org.example.pojo.entity.Purchase">
+    select purchase_id,own_name,purchase_type,total_price,address,purchase_status,create_time
+    from tb_purchase
+    where purchase_id in
+    <foreach collection="idList" item="pid" open="(" separator="," close=")">
+      #{pid}
+    </foreach>
+  </select>
+
+
+  <select id="selectOrderDetail" resultType="org.example.pojo.vo.PurchaseVO">
+    SELECT
+      p.purchase_id,
+      p.own_name,
+      p.purchase_type,
+      p.total_price,
+      p.address AS delivery_address_id,
+      p.purchase_status,
+      p.create_time,
+
+      pd.detail_id,
+      pd.order_id,
+      pd.unin_price,
+      pd.sum_price,
+      pd.count,
+
+      o.title,
+      o.price,
+      o.content,
+      o.picture, 
+      o.address
+    FROM tb_purchase p
+           LEFT JOIN tb_purchase_detail pd ON p.purchase_id = pd.purchase_id
+           LEFT JOIN tb_order o ON pd.order_id = o.order_id
+           LEFT JOIN tb_address a ON p.address = a.id
+    WHERE p.own_name = #{ownName}
+  </select>
+
+
+  <insert id="insertPurchaseDetail" parameterType="org.example.pojo.entity.PurchaseDetail">
+    insert into tb_purchase_detail (detail_id, purchase_id, order_id, unin_price, sum_price, count)
+    values (#{detailId}, #{purchaseId}, #{orderId}, #{uninPrice}, #{sumPrice}, #{count})
+  </insert>
+
+
+</mapper>

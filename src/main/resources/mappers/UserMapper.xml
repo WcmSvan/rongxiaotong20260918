@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.UserMapper">
+
+    <!-- 插入用户 -->
+    <insert id="insertUser">
+
+        INSERT INTO tb_user (user_name, password,nick_name, phone,create_time, update_time)
+        VALUES (#{userName}, #{password}, #{nickName}, #{phone}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!-- 根据用户名和手机号查询用户 -->
+    <select id="findByUsernameAndPhone" resultType="User">
+        SELECT * FROM tb_user WHERE user_name = #{userName} AND phone = #{phone}
+    </select>
+
+    <!-- 根据用户名查询用户 -->
+    <select id="findByUsername" resultType="User">
+        SELECT * FROM tb_user WHERE user_name = #{userName}
+    </select>
+
+    <!-- 统计身份证号占用数（excludeUserName 非空时排除该用户），用于唯一性校验 -->
+    <select id="countByIdentityNum" resultType="int">
+        SELECT COUNT(*) FROM tb_user WHERE identity_num = #{identityNum}
+        <if test="excludeUserName != null and excludeUserName != ''">
+            AND user_name != #{excludeUserName}
+        </if>
+    </select>
+
+    <!-- 管理员添加用户 -->
+    <insert id="addUser">
+        INSERT INTO tb_user (user_name, password,nick_name, phone,create_time, update_time,
+                             identity_num,role,address,real_name)
+        VALUES (#{userName}, #{password}, #{nickName}, #{phone}, #{createTime}, #{updateTime},
+                #{identityNum}, #{role}, #{address}, #{realName})
+    </insert>
+
+    <!-- 统计手机号占用数（excludeUserName 非空时排除该用户），用于唯一性校验 -->
+    <select id="countByPhone" resultType="int">
+        SELECT COUNT(*) FROM tb_user WHERE phone = #{phone}
+        <if test="excludeUserName != null and excludeUserName != ''">
+            AND user_name != #{excludeUserName}
+        </if>
+    </select>
+
+    <!-- 根据用户名删除用户 -->
+    <delete id="deleteUser">
+        DELETE FROM tb_user WHERE user_name = #{userName}
+    </delete>
+
+    <!-- 更新用户信息：仅更新非空字段，避免 sparse DTO 把其他列冲成 NULL -->
+    <!-- avatar / real_name 为新增字段；role 保留判空（管理员可改、用户改自己时 service 显式置 null 即不更新） -->
+    <update id="updateUser">
+        UPDATE tb_user
+        <set>
+            <if test="password != null and password != ''">password = #{password},</if>
+            <if test="nickName != null and nickName != ''">nick_name = #{nickName},</if>
+            <if test="identityNum != null and identityNum != ''">identity_num = #{identityNum},</if>
+            <if test="phone != null and phone != ''">phone = #{phone},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="role != null and role != ''">role = #{role},</if>
+            <if test="avatar != null and avatar != ''">avatar = #{avatar},</if>
+            <if test="realName != null and realName != ''">real_name = #{realName},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </set>
+        WHERE user_name = #{userName}
+    </update>
+
+    <!-- 根据用户名或昵称查询用户 -->
+    <select id="findByUser" resultType="org.example.pojo.entity.User">
+        SELECT * FROM tb_user
+        <where>
+            <if test="userName != null and userName != ''">
+                user_name LIKE CONCAT('%',#{userName},'%')
+            </if>
+            <if test="nickName != null and nickName != ''">
+                <if test="userName != null and userName != ''">OR</if>
+                nick_name LIKE CONCAT('%',#{nickName},'%')
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询所有用户 -->
+    <select id="selectUserList" resultType="org.example.pojo.entity.User">
+        SELECT * FROM tb_user
+    </select>
+
+    <!-- 根据角色查询用户 -->
+    <select id="findByRole" resultType="org.example.pojo.entity.User">
+        SELECT * FROM tb_user WHERE role = #{role}
+    </select>
+
+    <!-- 根据卖家名字查询用户 -->
+    <select id="selectAddressByName" resultType="org.example.pojo.entity.User">
+        SELECT address FROM tb_user WHERE user_name = #{ownName}
+    </select>
+
+    <!-- 统计该用户名下发布的商品（收购单）数量 -->
+    <select id="countPurchaseByUserName" resultType="int">
+        SELECT COUNT(*) FROM tb_purchase WHERE own_name = #{userName}
+    </select>
+
+    <!-- 统计该用户名下的订单数量 -->
+    <select id="countOrderByUserName" resultType="int">
+        SELECT COUNT(*) FROM tb_order WHERE own_name = #{userName}
+    </select>
+
+    <!-- 统计该用户名下发布的知识数量 -->
+    <select id="countKnowledgeByUserName" resultType="int">
+        SELECT COUNT(*) FROM tb_knowledge WHERE own_name = #{userName}
+    </select>
+
+</mapper>

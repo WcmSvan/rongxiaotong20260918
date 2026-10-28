@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.example.mapper.ExpertManagementMapper">
+
+<!--农业问答管理-->
+    <!--根据当前登录专家用户名获取问题列表-->
+    <select id="getExpertQuestionList" resultType="Question">
+        select * from tb_question where expert_name = #{expertName} order by status asc
+    </select>
+
+    <!--根据关键词和当前登录专家用户名获取问题列表-->
+    <select id="searchQuestionList" resultType="Question">
+
+        select * from tb_question
+                 <where>
+                   <if test = "keyword != null and keyword != ''">
+                     (title like concat('%', #{keyword}, '%') or question like concat('%', #{keyword}, '%'))
+                   </if>
+                 and expert_name = #{userName} order by status asc
+                 </where>
+    </select>
+
+    <!--根据问题id获取问题详情-->
+    <select id="getQuestionById" resultType="Question">
+        select * from tb_question where id = #{id}
+    </select>
+
+    <!--根据问题id回答问题-->
+    <update id="answerQuestionById" parameterType="Question">
+        update tb_question set status = 1, answer = #{answer} where id = #{id}
+    </update>
+
+    <!--根据问题id删除问题-->
+    <delete id="deleteQuestionById" parameterType="Question">
+        delete from tb_question where id = #{id}
+    </delete>
+
+
+<!--预约管理-->
+    <!--根据当前登录专家用户名获取预约列表-->
+    <select id="getExpertReservationList" resultType="Reserve">
+        select * from tb_reserve where expert_name = #{userName} order by status asc
+    </select>
+
+    <!--管理员查询所有专家的预约列表-->
+    <select id="getAllReservations" resultType="Reserve">
+        select * from tb_reserve order by status asc, id desc
+    </select>
+
+    <!--管理员根据专家用户名模糊查询预约列表-->
+    <select id="getReservationListByExpertNameLike" resultType="Reserve">
+        select * from tb_reserve
+        where expert_name like concat('%', #{expertName}, '%')
+        order by status asc, id desc
+    </select>
+
+    <!--根据 预约id/提问者名称/作物名称/状态 查询预约列表-->
+    <select id="searchReservationList" resultType="Reserve">
+        select * from tb_reserve where
+                                     <if test="keyword != null and keyword != ''">
+                                     (id = #{keyword}
+                                          or
+                                      questioner like concat('%', #{keyword}, '%')
+                                          or
+                                      plant_name like concat('%', #{keyword}, '%')
+                                          or
+                                      (#{keyword} regexp '^[0-9]+$' and status = #{keyword}))
+                                     </if>
+
+                                     and expert_name = #{userName} order by status asc
+    </select>
+
+    <!--根据预约id查询预约详情-->
+    <select id="getReservationById" resultType="Reserve">
+        select * from tb_reserve where id = #{id}
+    </select>
+
+    <!--根据预约id回复预约-->
+    <update id="replyReservationById" parameterType="Reserve">
+        update tb_reserve set status = 1, answer = #{answer} where id = #{id}
+    </update>
+
+    <!--管理员根据预约id删除预约-->
+    <delete id="deleteReservationById">
+        delete from tb_reserve where id = #{id}
+    </delete>
+
+<!--知识管理-->
+    <!--获取该专家的所有知识-->
+    <select id="getExpertKnowledgeList" resultType="Knowledge">
+            select * from tb_knowledge where own_name = #{userName} order by knowledge_id asc
+    </select>
+    <!--根据关键词搜索该专家的知识-->
+    <select id="searchKnowledgeList"  resultType="Knowledge">
+        select * from tb_knowledge
+
+                 <where>
+                     <if test="keyword != null and keyword != ''">
+                         (title like concat('%', #{keyword}, '%') or content like concat('%', #{keyword}, '%'))
+                     </if>
+                     and own_name = #{userName}
+                 </where>
+
+    </select>
+
+    <!--添加知识-->
+   <insert id="insertKnowledge" parameterType="Knowledge">
+        insert into tb_knowledge (title, content, pic_path, own_name, create_time, update_time)
+        values (#{title}, #{content}, #{picPath}, #{ownName}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--根据知识id更新知识-->
+<!--int updateKnowledgeById(@Param("id") Integer id, @Param("title") String title, @Param("content") String content, @Param("picpath") String picpath);-->
+    <update id="updateKnowledgeById" parameterType="Knowledge">
+        update tb_knowledge set title = #{title}, content = #{content}, pic_path = #{picpath}, update_time = now() where knowledge_id = #{id}
+    </update>
+
+    <!--
+    根据知识id删除知识    int deleteKnowledgeById(Integer id);
+    -->
+    <delete id="deleteKnowledgeById" >
+        delete from tb_knowledge where knowledge_id = #{id}
+    </delete>
+
+</mapper>

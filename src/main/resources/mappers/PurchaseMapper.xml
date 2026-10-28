@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.PurchaseMapper">
+  <resultMap id="BaseResultMap" type="org.example.pojo.entity.Purchase">
+    <id column="purchase_id" jdbcType="INTEGER" property="purchaseId" />
+    <result column="own_name" jdbcType="VARCHAR" property="ownName" />
+    <result column="purchase_type" jdbcType="INTEGER" property="purchaseType" />
+    <result column="total_price" jdbcType="DECIMAL" property="totalPrice" />
+    <result column="address" jdbcType="VARCHAR" property="address" />
+    <result column="purchase_status" jdbcType="INTEGER" property="purchaseStatus" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    purchase_id, own_name, purchase_type, total_price, address, purchase_status, create_time,
+    update_time
+  </sql>
+
+  <insert id="insertPurchase" useGeneratedKeys="true" keyProperty="purchaseId">
+    INSERT INTO tb_purchase (own_name, purchase_type, total_price, address, purchase_status, create_time, update_time)
+    VALUES (#{ownName}, #{purchaseType}, #{totalPrice}, #{address}, #{purchaseStatus}, #{createTime}, #{updateTime})
+  </insert>
+
+
+  <select id="selectorderByOwnName" resultType="org.example.pojo.entity.Purchase">
+    select * from tb_purchase where own_name = #{ownName}
+  </select>
+
+  <select id="selectPurchaseIdByOwnName" resultType="java.lang.Integer">
+    SELECT DISTINCT purchase_id FROM tb_purchase WHERE own_name = #{ownName}
+  </select>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</mapper>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.AddressMapper">
+
+<!-- 添加地址 -->
+    <insert id="insertAddress">
+        INSERT INTO tb_address (own_name, consignee, address_detail, phone)
+        VALUES (#{ownName}, #{consignee}, #{addressDetail}, #{phone})
+    </insert>
+
+    <!-- 根据id查询地址（用于修改/删除前校验归属权） -->
+    <select id="findById" resultType="org.example.pojo.entity.Address">
+        SELECT id, own_name AS ownName, consignee, address_detail AS addressDetail, phone, is_default AS isDefault
+        FROM tb_address WHERE id = #{id}
+    </select>
+
+    <!-- 修改地址（WHERE 只按主键 id 定位，归属权校验在 Service 层完成） -->
+    <update id="updateAddress" parameterType="org.example.pojo.entity.Address">
+        UPDATE tb_address
+        SET consignee = #{consignee}, address_detail = #{addressDetail}, phone = #{phone}, is_default = #{isDefault}
+        WHERE id = #{id} and own_name = #{ownName}
+    </update>
+
+    <!-- 删除地址 -->
+    <delete id="deleteAddress" parameterType="java.lang.Integer">
+        DELETE FROM tb_address
+        WHERE id = #{id}
+    </delete>
+
+    <!-- 根据用户名称查询地址 -->
+    <select id="selectAddress" parameterType="java.lang.String" resultType="org.example.pojo.entity.Address">
+        SELECT id, own_name AS ownName, consignee, address_detail AS addressDetail, phone, is_default AS isDefault
+        FROM tb_address
+        WHERE own_name = #{ownName}
+    </select>
+</mapper>

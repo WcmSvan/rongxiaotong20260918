@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.BankMapper">
+    <!-- 查询到的数据封装到Bank实体类 -->
+    <resultMap id="BaseResultMap" type="org.example.pojo.entity.Bank">
+        <id column="bank_id" jdbcType="INTEGER" property="bankId" />
+        <result column="bank_name" jdbcType="VARCHAR" property="bankName" />
+        <result column="introduce" jdbcType="VARCHAR" property="introduce" />
+        <result column="bank_phone" jdbcType="VARCHAR" property="bankPhone" />
+        <result column="money" jdbcType="DECIMAL" property="money" />
+        <result column="rate" jdbcType="DECIMAL" property="rate" />
+        <result column="repayment" jdbcType="INTEGER" property="repayment" />
+    </resultMap>
+
+    <!-- 查询所有银行 -->
+    <!--把经常要查询的字段抽成公共片段，复用。
+id="Base_Column_List" 是片段名称，通过 <include refid="Base_Column_List"/> 引入，避免多处重复写字段。-->
+
+    <sql id="Base_Column_List">
+        bank_id, bank_name, introduce, bank_phone, money, rate, repayment
+    </sql>
+    <select id="selectAllBank" resultMap="BaseResultMap">
+        select
+                <!-- 引入公共片段 -->
+        <include refid="Base_Column_List" />
+        from tb_bank
+    </select>
+
+    <!-- 根据银行id查询单家银行详情 -->
+    <select id="selectBankById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM tb_bank
+        WHERE bank_id = #{bankId}
+    </select>
+</mapper>

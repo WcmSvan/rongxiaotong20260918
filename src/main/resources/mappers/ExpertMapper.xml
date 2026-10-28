@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.ExpertMapper">
+    <!--    查询专家列表-->
+    <select id="getExpertList" resultType="Expert">
+        SELECT e.*, u.avatar
+        FROM tb_expert e
+        LEFT JOIN tb_user u ON e.user_name = u.user_name
+    </select>
+
+    <!--    根据用户名查询专家详情-->
+    <select id="getExpertInfo" resultType="Expert">
+        SELECT e.*, u.avatar
+        FROM tb_expert e
+        LEFT JOIN tb_user u ON e.user_name = u.user_name
+        WHERE e.user_name = #{expertUserName}
+    </select>
+
+    <!--    用户向专家添加咨询问题-->
+    <insert id="addConsultation" parameterType="Question">
+            insert into tb_question (title,question,plant_name,phone,expert_name,questioner,status)
+            values (#{title},#{question},#{plantName},#{phone},#{expertName},#{questioner},#{status})
+    </insert>
+
+    <!--    用户向专家添加线下咨询问题-->
+    <insert id="addOfflineQuery" parameterType="Reserve">
+            insert into tb_reserve (expert_name,questioner,area,address,
+                                    plant_name,soil_condition,plant_condition,plant_detail,phone,
+                                    message,answer,status)
+            values (#{expertName},#{questioner},#{area},#{address},
+                    #{plantName},#{soilCondition},#{plantCondition},#{plantDetail},#{phone},
+                    #{message},#{answer},#{status})
+    </insert>
+
+    <!--    管理员添加用户且角色为 expert 时联动写入 tb_expert-->
+    <insert id="insertExpert" parameterType="Expert">
+            insert into tb_expert (user_name, real_name, phone, profession, position, belong)
+            values (#{userName}, #{realName}, #{phone}, #{profession}, #{position}, #{belong})
+    </insert>
+
+    <!--    管理员将专家角色改为非专家时联动删除 tb_expert 对应记录-->
+    <delete id="deleteExpertByUserName">
+            delete from tb_expert where user_name = #{userName}
+    </delete>
+
+    <!--    更新专家信息：按非空字段动态更新，realName/phone 供管理员同步，profession/position/belong 供专家本人填写 -->
+    <update id="updateExpertProfile" parameterType="Expert">
+            update tb_expert
+            <set>
+                <if test="realName != null">real_name = #{realName},</if>
+                <if test="phone != null">phone = #{phone},</if>
+                <if test="profession != null">profession = #{profession},</if>
+                <if test="position != null">position = #{position},</if>
+                <if test="belong != null">belong = #{belong}</if>
+            </set>
+            where user_name = #{userName}
+    </update>
+
+
+</mapper>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.QuestionMapper">
+    <!--    获取所有咨询问题-->
+    <select id="getQuestionList" resultType="Question">
+            select * from tb_question order by status desc
+    </select>
+
+    <!--    根据关键字查询问题-->
+    <select id="searchQuestion" resultType="Question">
+            select * from tb_question where question like concat('%',#{keyword},'%')
+    </select>
+
+    <!--    根据ID查询问题详情-->
+    <update id="answerQuestionById" parameterType="Question">
+            update tb_question set answer = #{answer}, status = 1  where id = #{id}
+    </update>
+
+    <!--    根据ID查询问题详情-->
+    <select id="getQuestionById" resultType="Question">
+            select * from tb_question where id = #{id}
+    </select>
+
+</mapper>

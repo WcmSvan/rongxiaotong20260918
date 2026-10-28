@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.KnowledgeMapper">
+
+    <!--    查询所有知识-->
+    <select id="findAllKnowledge" resultType="Knowledge">
+        select * from tb_knowledge
+    </select>
+
+    <!--    根据ID查询知识详情-->
+    <select id="selectKnowledgeById"  resultType="Knowledge">
+        select * from tb_knowledge where knowledge_id = #{id}
+    </select>
+
+    <!--    根据关键字查询知识-->
+    <select id="selectKnowledgeByKeyword"  resultType="Knowledge">
+        select * from tb_knowledge where
+                                       title like concat('%', #{keyword}, '%')
+                                       or
+                                       content like concat('%', #{keyword}, '%')
+    </select>
+
+</mapper>
